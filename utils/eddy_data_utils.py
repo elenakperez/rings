@@ -15,7 +15,7 @@
     ) is_ccr                         : returns true if given eddy is cold core ring, false otherwise
     ) eddy_moves_west                : returns true is eddy moves westward
     ) closest_gs_lat                 : returns closest lon, lat of GS position for a given eddy
-    ) is_geq_100m_isobath            : returns true if eddy depth is greater than or equal to 100-m isobath
+    ) is_geq_500m_isobath            : returns true if eddy depth is greater than or equal to 100-m isobath
     ) make_eddy_region_df            : takes Chelton tracks and saves a processed eddy DataFrame as pickled file
     ) make_eddy_zone_df              : cuts down eddy DataFrame to smaller zone + saves new DataFrame as pickle
     ) eddy_df_to_ring_df             : takes an eddy DataFrame and saves a new DataFrame of just WCRs or CCRs
@@ -68,7 +68,7 @@ def eddy_df_old_version():
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     # open dataset from path
-    ds = nc.Dataset('/Users/elenaperez/Desktop/chatts/data/eddy_trajectory_dt_2.0_19930101_20200307.nc')
+    ds = nc.Dataset('/Users/elenaperez/Desktop/rings/data/eddy_trajectory_dt_2.0_19930101_20200307.nc')
 
     # get length of a column (number of observations=27880804)
     lat =ds['latitude'][:].data
@@ -192,7 +192,7 @@ def get_gs():
      
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     # load GS file
-    gs = loadmat('/Users/elenaperez/Desktop/chatts/data/GS.mat')
+    gs = loadmat('/Users/elenaperez/Desktop/rings/data/GS.mat')
     
     # save Gulf Stream data as xarray
     return (gs['lon_cell'][0][0][0] - 360),(gs['lat_cell'][0][0][0])
@@ -213,7 +213,7 @@ def get_gs_year(year):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     
     # load GS file
-    gs = loadmat('/Users/elenaperez/Desktop/chatts/data/GS.mat')
+    gs = loadmat('/Users/elenaperez/Desktop/rings/data/GS.mat')
     
     return (gs['lon_cell_yearly'][year-1993][0][0] - 360),(gs['lat_cell_yearly'][year-1993][0][0])
 
@@ -233,7 +233,7 @@ def get_gs_month(year,month):
         
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     # load GS file
-    gs = loadmat('/Users/elenaperez/Desktop/chatts/data/GS.mat')
+    gs = loadmat('/Users/elenaperez/Desktop/rings/data/GS.mat')
     
     return (gs['lon_cell_monthly'][(((year-1993)*12)+month)][0][0] - 360),(gs['lat_cell_monthly'][(((year-1993)*12)+month)][0][0])
 
@@ -256,7 +256,7 @@ def get_gs_day(year,month,day):
         
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     # load GS file
-    gs = loadmat('/Users/elenaperez/Desktop/chatts/data/gs/GS_daily_CMEMS_047_50cm_contours_1993_to_nrt.mat')
+    gs = loadmat('/Users/elenaperez/Desktop/rings/data/gs/GS_daily_CMEMS_047_50cm_contours_1993_to_nrt.mat')
     
     'convert time array to ordinal dates'
     for d in range(len(gs['time'][0])-1):
@@ -376,7 +376,7 @@ def is_wcr(eddy):
 
     min_index = np.argmin(abs(gs_lon_np-eddy_lon_np)) # what index of gs lon array is the closest to eddy formation lon
 
-    return ((eddy_lat >= gs_lat_np.T[min_index]-0.25) & (is_geq_100m_isobath(eddy) & (eddy['cyclonic_type']==1).all()) & (eddy_lat <= gs_lat_np.T[min_index]+3) & eddy_moves_west(eddy)) # if true then eddy formation is north of gs path
+    return ((eddy_lat >= gs_lat_np.T[min_index]-0.25) & (is_geq_500m_isobath(eddy) & (eddy['cyclonic_type']==1).all()) & (eddy_lat <= gs_lat_np.T[min_index]+3) & eddy_moves_west(eddy)) # if true then eddy formation is north of gs path
 
 #-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -419,7 +419,7 @@ def is_ccr(eddy):
     
     westward_propagation = eddy_moves_west(eddy) # True if eddy moves west
     
-    return ((eddy_lat <= gs_lat_np.T[min_index]+0.25) & (is_geq_100m_isobath(eddy)) & (eddy_lat >= gs_lat_np.T[min_index]-3) & ((eddy['cyclonic_type']==-1).all()) & (eddy_lat >= 34) & westward_propagation)
+    return ((eddy_lat <= gs_lat_np.T[min_index]+0.25) & (is_geq_500m_isobath(eddy)) & (eddy_lat >= gs_lat_np.T[min_index]-3) & ((eddy['cyclonic_type']==-1).all()) & (eddy_lat >= 34) & westward_propagation)
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------
@@ -462,7 +462,7 @@ def is_eastward_wcr(eddy, gs):
     
     eastward_propagation = eddy_moves_east(eddy) # True if eddy moves west
 
-    return ((eddy_lat >= gs_lat_np.T[min_index]-0.25) & (is_geq_100m_isobath(eddy) & (eddy['cyclonic_type']==1).all()) & (eddy_lat <= gs_lat_np.T[min_index]+3) & (eastward_propagation)) # if true then eddy formation is north of gs path
+    return ((eddy_lat >= gs_lat_np.T[min_index]-0.25) & (is_geq_500m_isobath(eddy) & (eddy['cyclonic_type']==1).all()) & (eddy_lat <= gs_lat_np.T[min_index]+3) & (eastward_propagation)) # if true then eddy formation is north of gs path
 
 #-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -504,7 +504,7 @@ def is_eastward_ccr(eddy, gs):
     
     eastward_propagation = eddy_moves_east(eddy) # True if eddy moves west
     
-    return ((eddy_lat <= gs_lat_np.T[min_index]+0.25) & (is_geq_100m_isobath(eddy)) & (eddy_lat >= gs_lat_np.T[min_index]-3) & ((eddy['cyclonic_type']==-1).all()) & (eddy_lat >= 34) & (eastward_propagation))
+    return ((eddy_lat <= gs_lat_np.T[min_index]+0.25) & (is_geq_500m_isobath(eddy)) & (eddy_lat >= gs_lat_np.T[min_index]-3) & ((eddy['cyclonic_type']==-1).all()) & (eddy_lat >= 34) & (eastward_propagation))
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------
@@ -601,7 +601,7 @@ def closest_gs_lat(eddy,gs):
 
 # ) returns true if eddy depth is greater than or equal to 100-m isobath
 
-def is_geq_100m_isobath(eddy):
+def is_geq_500m_isobath(eddy):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     
     This function determins if an eddy is *not* on the shelf. If its depth is greater than or equal to
@@ -612,10 +612,10 @@ def is_geq_100m_isobath(eddy):
         eddy (DataFrame) : Pandas DataFrame with data from a single eddy 
 
     Output:
-        (bool)           : returns true if eddy is deeper than 100m isobath (on shelf), returns false otherwise
+        (bool)           : returns true if eddy is deeper than 500m isobath (on shelf), returns false otherwise
 
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    bathy = xr.open_dataset('/Users/elenaperez/Desktop/chatts/data/nwa_bathy.nc')
+    bathy = xr.open_dataset('/Users/elenaperez/Desktop/rings/data/nwa_bathy.nc')
     
     target_bathy = 500 # desired isobath
 
@@ -660,7 +660,7 @@ def make_eddy_region_df(time_period, x_bnds, y_bnds, df_name):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     # load file as xarray DataArray
-    path_to_chelton_tracks = '/Users/elenaperez/Desktop/chatts/data/eddy_trajectory_dt_2.0_19930101_20200307.nc'
+    path_to_chelton_tracks = '/Users/elenaperez/Desktop/rings/data/eddy_trajectory_dt_2.0_19930101_20200307.nc'
     eddy_da = xr.open_dataset(path_to_chelton_tracks)
     'eddy_da (DataArray)     : Xarray DataArray of global mesoscale eddies '
 
@@ -730,7 +730,7 @@ def make_eddy_zone_df(eddy_df, time_period, which_zone, zone_df_name):
         eddy_zone_df = eddy_zone_df[(eddy_zone_df['time'] >= time_period[0]) & (eddy_zone_df['time'] <= time_period[0])] 
 
     # save regional eddy DataFrame in pickled file
-    eddy_zone_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/'+zone_df_name+'.pkl')
+    eddy_zone_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/'+zone_df_name+'.pkl')
 
 # # example of how to use this function
 # make_eddy_zone_df(eddy_ccr_df, False, 0, 'zone_ccrs')
@@ -780,7 +780,7 @@ def make_eddy_ch_df(eddy_df, time_period, new_df_name):
         eddy_ch_df = eddy_ch_df[(eddy_ch_df['time'] >= time_period[0]) & (eddy_ch_df['time'] <= time_period[0])] 
 
     # save regional eddy DataFrame in pickled file
-    eddy_ch_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/'+new_df_name+'.pkl')
+    eddy_ch_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/'+new_df_name+'.pkl')
 
 # # example of how to use this function
 # make_eddy_ch_df(nwa_eddies, False, 'ch_eddies')
@@ -815,7 +815,7 @@ def eddy_df_to_ring_df(eddy_df):
     eddy_ccr_df = eddy_df[eddy_df['track'].isin(ccr_tracks)]
 
     # save ccr df as pickled file
-    eddy_ccr_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/nwa_ccr_day_df.pkl') 
+    eddy_ccr_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/nwa_ccr_day_df.pkl') 
         
     ## WCRs ##
     wcr_tracks = []
@@ -829,7 +829,7 @@ def eddy_df_to_ring_df(eddy_df):
     eddy_wcr_df = eddy_df[eddy_df['track'].isin(wcr_tracks)]
 
     # save ccr df as pickled file
-    eddy_wcr_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/nwa_wcr_day_df.pkl')
+    eddy_wcr_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/nwa_wcr_day_df.pkl')
     
     
     
@@ -847,7 +847,7 @@ def eddy_df_to_ring_df(eddy_df):
     eddy_east_ccr_df = eddy_df[eddy_df['track'].isin(east_ccr_tracks)]
 
     # save ccr df as pickled file
-    eddy_east_ccr_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/nwa_east_ccr_day_df.pkl') 
+    eddy_east_ccr_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/nwa_east_ccr_day_df.pkl') 
         
     ## WCRs ##
     east_wcr_tracks = []
@@ -861,7 +861,7 @@ def eddy_df_to_ring_df(eddy_df):
     eddy_east_wcr_df = eddy_df[eddy_df['track'].isin(east_wcr_tracks)]
 
     # save ccr df as pickled file
-    eddy_east_wcr_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/nwa_east_wcr_day_df.pkl')
+    eddy_east_wcr_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/nwa_east_wcr_day_df.pkl')
     
     
     
@@ -906,7 +906,7 @@ def count_monthly_ring_formations(ring_df, ring_type, df_name):
         ring_month_count_df.iloc[counter]=[month, monthly_formations, monthly_avg]
         counter += 1
         
-    ring_month_count_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/'+df_name+'.pkl')
+    ring_month_count_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/'+df_name+'.pkl')
 
    # example call
    # zone_wcr_month_count_df = count_monthly_ring_formations(zone_wcrs, 'wcr', 'zone_wcr_monthly_formations')
@@ -949,7 +949,7 @@ def count_annual_ring_formations(ring_df, ring_type, df_name):
         ring_annual_count_df.iloc[counter]=[i, annual_formations]
         counter += 1
         
-    ring_annual_count_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/'+df_name+'.pkl')
+    ring_annual_count_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/'+df_name+'.pkl')
        
 ## example of how to call this function
 # count_annual_ring_formations(eddy_ccr_df,'ccr','nwa_ccr_annual_formations')
@@ -994,7 +994,7 @@ def count_all_ring_formations(ring_df, ring_type, df_name):
             ring_all_count_df.iloc[counter]=[year, month, ring_formations]
             counter += 1
 
-    ring_all_count_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/'+df_name+'.pkl')
+    ring_all_count_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/'+df_name+'.pkl')
 
     
 #-------------------------------------------------------------------------------------------------------------------------------------------
@@ -1011,17 +1011,17 @@ def merge_monthly_ring_counts():
      
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     # # open ring *MONTHLY* formation counts
-    zone_ccr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ccr_monthly_formations.pkl')
-    zone1_ccr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_ccr_monthly_formations.pkl')
-    zone2_ccr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_ccr_monthly_formations.pkl')
-    zone3_ccr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_ccr_monthly_formations.pkl')
-    zone4_ccr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_ccr_monthly_formations.pkl')
+    zone_ccr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ccr_monthly_formations.pkl')
+    zone1_ccr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_ccr_monthly_formations.pkl')
+    zone2_ccr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_ccr_monthly_formations.pkl')
+    zone3_ccr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_ccr_monthly_formations.pkl')
+    zone4_ccr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_ccr_monthly_formations.pkl')
 
-    zone_wcr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_wcr_monthly_formations.pkl')
-    zone1_wcr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_wcr_monthly_formations.pkl')
-    zone2_wcr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_wcr_monthly_formations.pkl')
-    zone3_wcr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_wcr_monthly_formations.pkl')
-    zone4_wcr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_wcr_monthly_formations.pkl')
+    zone_wcr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_wcr_monthly_formations.pkl')
+    zone1_wcr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_wcr_monthly_formations.pkl')
+    zone2_wcr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_wcr_monthly_formations.pkl')
+    zone3_wcr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_wcr_monthly_formations.pkl')
+    zone4_wcr_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_wcr_monthly_formations.pkl')
     
     ## WCRs ##
     # merge each dataframe onto the all_zones dataframe
@@ -1036,7 +1036,7 @@ def merge_monthly_ring_counts():
     zone_wcr_monthly_formations['zone_4_mean'] = zone4_wcr_monthly_formations['mean_wcr_formations']
 
     # save dataframe
-    zone_wcr_monthly_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_wcr_monthly_formations.pkl') 
+    zone_wcr_monthly_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_wcr_monthly_formations.pkl') 
     
     ## CCRs ##
     # merge each dataframe onto the all_zones dataframe
@@ -1051,7 +1051,7 @@ def merge_monthly_ring_counts():
     zone_ccr_monthly_formations['zone_4_mean'] = zone4_ccr_monthly_formations['mean_ccr_formations']
 
     # save dataframe
-    zone_ccr_monthly_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ccr_monthly_formations.pkl')
+    zone_ccr_monthly_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ccr_monthly_formations.pkl')
  
 
  # example call
@@ -1072,17 +1072,17 @@ def merge_annual_ring_counts():
      
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     ## OPEN
-    zone_ccr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ccr_annual_formations.pkl')
-    zone1_ccr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_ccr_annual_formations.pkl')
-    zone2_ccr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_ccr_annual_formations.pkl')
-    zone3_ccr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_ccr_annual_formations.pkl')
-    zone4_ccr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_ccr_annual_formations.pkl')
+    zone_ccr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ccr_annual_formations.pkl')
+    zone1_ccr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_ccr_annual_formations.pkl')
+    zone2_ccr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_ccr_annual_formations.pkl')
+    zone3_ccr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_ccr_annual_formations.pkl')
+    zone4_ccr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_ccr_annual_formations.pkl')
 
-    zone_wcr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_wcr_annual_formations.pkl')
-    zone1_wcr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_wcr_annual_formations.pkl')
-    zone2_wcr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_wcr_annual_formations.pkl')
-    zone3_wcr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_wcr_annual_formations.pkl')
-    zone4_wcr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_wcr_annual_formations.pkl')
+    zone_wcr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_wcr_annual_formations.pkl')
+    zone1_wcr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_wcr_annual_formations.pkl')
+    zone2_wcr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_wcr_annual_formations.pkl')
+    zone3_wcr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_wcr_annual_formations.pkl')
+    zone4_wcr_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_wcr_annual_formations.pkl')
     
     ## WCRs ##
     # merge each dataframe onto the all_zones dataframe
@@ -1093,7 +1093,7 @@ def merge_annual_ring_counts():
     zone_wcr_annual_formations['zone_4'] = zone4_wcr_annual_formations['wcr_formations']
 
     # save dataframe
-    zone_wcr_annual_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_wcr_annual_formations.pkl') 
+    zone_wcr_annual_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_wcr_annual_formations.pkl') 
     
     ## CCRs ##
     # merge each dataframe onto the all_zones dataframe
@@ -1104,7 +1104,7 @@ def merge_annual_ring_counts():
     zone_ccr_annual_formations['zone_4'] = zone4_ccr_annual_formations['ccr_formations']
 
     # save dataframe
-    zone_ccr_annual_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ccr_annual_formations.pkl') 
+    zone_ccr_annual_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ccr_annual_formations.pkl') 
     
 ## example of how to call the function
 # merge_annual_ring_counts() 
@@ -1124,17 +1124,17 @@ def merge_all_ring_counts():
      
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     # # open ring *MONTHLY* formation counts
-    zone_ccr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ccr_all_formations.pkl')
-    zone1_ccr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_ccr_all_formations.pkl')
-    zone2_ccr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_ccr_all_formations.pkl')
-    zone3_ccr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_ccr_all_formations.pkl')
-    zone4_ccr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_ccr_all_formations.pkl')
+    zone_ccr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ccr_all_formations.pkl')
+    zone1_ccr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_ccr_all_formations.pkl')
+    zone2_ccr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_ccr_all_formations.pkl')
+    zone3_ccr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_ccr_all_formations.pkl')
+    zone4_ccr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_ccr_all_formations.pkl')
 
-    zone_wcr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_wcr_all_formations.pkl')
-    zone1_wcr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_wcr_all_formations.pkl')
-    zone2_wcr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_wcr_all_formations.pkl')
-    zone3_wcr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_wcr_all_formations.pkl')
-    zone4_wcr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_wcr_all_formations.pkl')
+    zone_wcr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_wcr_all_formations.pkl')
+    zone1_wcr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_wcr_all_formations.pkl')
+    zone2_wcr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_wcr_all_formations.pkl')
+    zone3_wcr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_wcr_all_formations.pkl')
+    zone4_wcr_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_wcr_all_formations.pkl')
     
     ## WCRs ##
     # merge each dataframe onto the all_zones dataframe
@@ -1145,7 +1145,7 @@ def merge_all_ring_counts():
     zone_wcr_all_formations['zone_4'] = zone4_wcr_all_formations['wcr_formations']
 
     # save dataframe
-    zone_wcr_all_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_wcr_all_formations.pkl') 
+    zone_wcr_all_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_wcr_all_formations.pkl') 
     
     ## CCRs ##
     # merge each dataframe onto the all_zones dataframe
@@ -1156,7 +1156,7 @@ def merge_all_ring_counts():
     zone_ccr_all_formations['zone_4'] = zone4_ccr_all_formations['ccr_formations']
 
     # save dataframe
-    zone_ccr_all_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ccr_all_formations.pkl')
+    zone_ccr_all_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ccr_all_formations.pkl')
  
 
  # example call
@@ -1198,7 +1198,7 @@ def count_monthly_eddy_formations(eddy_df, eddy_type, df_name):
         eddy_month_count_df.iloc[counter]=[month, monthly_formations, monthly_avg]
         counter += 1
         
-    eddy_month_count_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/'+df_name+'.pkl')
+    eddy_month_count_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/'+df_name+'.pkl')
 
    ## example call
    # count_monthly_eddy_formations(zone_aeddies, 'anticyclonic', 'zone_aeddy_monthly_formations')   
@@ -1240,7 +1240,7 @@ def count_annual_eddy_formations(eddy_df, eddy_type, df_name):
         eddy_annual_count_df.iloc[counter]=[i, annual_formations]
         counter += 1
         
-    eddy_annual_count_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/'+df_name+'.pkl')
+    eddy_annual_count_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/'+df_name+'.pkl')
        
 ## example of how to call this function
 # count_annual_eddy_formations(zone_ceddies,'cyclonic','zone1_ceddy_annual_formations')
@@ -1284,7 +1284,7 @@ def count_all_eddy_formations(eddy_df, eddy_type, df_name):
             eddy_all_count_df.iloc[counter]=[year, month, eddy_formations]
             counter += 1
 
-    eddy_all_count_df.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/'+df_name+'.pkl')
+    eddy_all_count_df.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/'+df_name+'.pkl')
 
 
 # # example call
@@ -1305,17 +1305,17 @@ def merge_monthly_eddy_counts():
      
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     # # open ring *MONTHLY* formation counts
-    zone_ceddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ceddy_monthly_formations.pkl')
-    zone1_ceddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_ceddy_monthly_formations.pkl')
-    zone2_ceddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_ceddy_monthly_formations.pkl')
-    zone3_ceddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_ceddy_monthly_formations.pkl')
-    zone4_ceddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_ceddy_monthly_formations.pkl')
+    zone_ceddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ceddy_monthly_formations.pkl')
+    zone1_ceddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_ceddy_monthly_formations.pkl')
+    zone2_ceddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_ceddy_monthly_formations.pkl')
+    zone3_ceddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_ceddy_monthly_formations.pkl')
+    zone4_ceddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_ceddy_monthly_formations.pkl')
 
-    zone_aeddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_aeddy_monthly_formations.pkl')
-    zone1_aeddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_aeddy_monthly_formations.pkl')
-    zone2_aeddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_aeddy_monthly_formations.pkl')
-    zone3_aeddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_aeddy_monthly_formations.pkl')
-    zone4_aeddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_aeddy_monthly_formations.pkl')
+    zone_aeddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_aeddy_monthly_formations.pkl')
+    zone1_aeddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_aeddy_monthly_formations.pkl')
+    zone2_aeddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_aeddy_monthly_formations.pkl')
+    zone3_aeddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_aeddy_monthly_formations.pkl')
+    zone4_aeddy_monthly_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_aeddy_monthly_formations.pkl')
 
     ## ANTICYCLONIC ##
     # merge each dataframe onto the all_zones dataframe
@@ -1330,7 +1330,7 @@ def merge_monthly_eddy_counts():
     zone_aeddy_monthly_formations['zone_4_mean'] = zone4_aeddy_monthly_formations['mean_anticyclonic_formations']
 
     # save dataframe
-    zone_aeddy_monthly_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_aeddy_monthly_formations.pkl') 
+    zone_aeddy_monthly_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_aeddy_monthly_formations.pkl') 
     
     ## CYCLONIC ##
     # merge each dataframe onto the all_zones dataframe
@@ -1345,7 +1345,7 @@ def merge_monthly_eddy_counts():
     zone_ceddy_monthly_formations['zone_4_mean'] = zone4_ceddy_monthly_formations['mean_cyclonic_formations']
 
     # save dataframe
-    zone_ceddy_monthly_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ceddy_monthly_formations.pkl')
+    zone_ceddy_monthly_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ceddy_monthly_formations.pkl')
  
 
     ## example call
@@ -1367,17 +1367,17 @@ def merge_annual_eddy_counts():
      
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     ## OPEN
-    zone_ceddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ceddy_annual_formations.pkl')
-    zone1_ceddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_ceddy_annual_formations.pkl')
-    zone2_ceddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_ceddy_annual_formations.pkl')
-    zone3_ceddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_ceddy_annual_formations.pkl')
-    zone4_ceddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_ceddy_annual_formations.pkl')
+    zone_ceddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ceddy_annual_formations.pkl')
+    zone1_ceddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_ceddy_annual_formations.pkl')
+    zone2_ceddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_ceddy_annual_formations.pkl')
+    zone3_ceddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_ceddy_annual_formations.pkl')
+    zone4_ceddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_ceddy_annual_formations.pkl')
 
-    zone_aeddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_aeddy_annual_formations.pkl')
-    zone1_aeddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_aeddy_annual_formations.pkl')
-    zone2_aeddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_aeddy_annual_formations.pkl')
-    zone3_aeddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_aeddy_annual_formations.pkl')
-    zone4_aeddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_aeddy_annual_formations.pkl')
+    zone_aeddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_aeddy_annual_formations.pkl')
+    zone1_aeddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_aeddy_annual_formations.pkl')
+    zone2_aeddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_aeddy_annual_formations.pkl')
+    zone3_aeddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_aeddy_annual_formations.pkl')
+    zone4_aeddy_annual_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_aeddy_annual_formations.pkl')
 
     ## ANTI-CYCLONES ##
     # merge each dataframe onto the all_zones dataframe
@@ -1388,7 +1388,7 @@ def merge_annual_eddy_counts():
     zone_aeddy_annual_formations['zone_4'] = zone4_aeddy_annual_formations['anticyclonic_formations']
 
     # save dataframe
-    zone_aeddy_annual_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_aeddy_annual_formations.pkl') 
+    zone_aeddy_annual_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_aeddy_annual_formations.pkl') 
     
     ## CYCLONES ##
     # merge each dataframe onto the all_zones dataframe
@@ -1399,7 +1399,7 @@ def merge_annual_eddy_counts():
     zone_ceddy_annual_formations['zone_4'] = zone4_ceddy_annual_formations['cyclonic_formations']
 
     # save dataframe
-    zone_ceddy_annual_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ceddy_annual_formations.pkl') 
+    zone_ceddy_annual_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ceddy_annual_formations.pkl') 
     
 ## example of how to call the function
 # merge_annual_eddy_counts()   
@@ -1420,17 +1420,17 @@ def merge_all_eddy_counts():
      
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     # # open ring *MONTHLY* formation counts
-    zone_ceddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ceddy_all_formations.pkl')
-    zone1_ceddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_ceddy_all_formations.pkl')
-    zone2_ceddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_ceddy_all_formations.pkl')
-    zone3_ceddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_ceddy_all_formations.pkl')
-    zone4_ceddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_ceddy_all_formations.pkl')
+    zone_ceddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ceddy_all_formations.pkl')
+    zone1_ceddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_ceddy_all_formations.pkl')
+    zone2_ceddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_ceddy_all_formations.pkl')
+    zone3_ceddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_ceddy_all_formations.pkl')
+    zone4_ceddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_ceddy_all_formations.pkl')
 
-    zone_aeddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_aeddy_all_formations.pkl')
-    zone1_aeddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone1_aeddy_all_formations.pkl')
-    zone2_aeddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone2_aeddy_all_formations.pkl')
-    zone3_aeddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone3_aeddy_all_formations.pkl')
-    zone4_aeddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone4_aeddy_all_formations.pkl')
+    zone_aeddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_aeddy_all_formations.pkl')
+    zone1_aeddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone1_aeddy_all_formations.pkl')
+    zone2_aeddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone2_aeddy_all_formations.pkl')
+    zone3_aeddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone3_aeddy_all_formations.pkl')
+    zone4_aeddy_all_formations = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone4_aeddy_all_formations.pkl')
     
     ## ANTICYCLONES ##
     # merge each dataframe onto the all_zones dataframe
@@ -1441,7 +1441,7 @@ def merge_all_eddy_counts():
     zone_aeddy_all_formations['zone_4'] = zone4_aeddy_all_formations['anticyclonic_formations']
 
     # save dataframe
-    zone_aeddy_all_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_aeddy_all_formations.pkl') 
+    zone_aeddy_all_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_aeddy_all_formations.pkl') 
     
     ## CYCLONES ##
     # merge each dataframe onto the all_zones dataframe
@@ -1452,7 +1452,7 @@ def merge_all_eddy_counts():
     zone_ceddy_all_formations['zone_4'] = zone4_ceddy_all_formations['cyclonic_formations']
 
     # save dataframe
-    zone_ceddy_all_formations.to_pickle('/Users/elenaperez/Desktop/chatts/data/pd_dataframes/zone_ceddy_all_formations.pkl')
+    zone_ceddy_all_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/pd_dataframes/zone_ceddy_all_formations.pkl')
 
  # example call
 # merge_all_eddy_counts()
