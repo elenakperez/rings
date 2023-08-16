@@ -554,8 +554,8 @@ def eddy_df_to_formation_counts_df():
     "                      define zone boundaries & create dataframe for each zone                            "
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-    eddy_wcr_df = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/nwa_ccrlike_eddies.pkl')
-    eddy_ccr_dr = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/nwa_wcrlike_eddies.pkl') 
+    eddy_wcr_df = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/nwa_wcrlike_eddies.pkl')
+    eddy_ccr_dr = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/nwa_ccrlike_eddies.pkl') 
         
     # Gangopadhyay et al., 2019 bounds
     zone_lat = [30,45] # N
