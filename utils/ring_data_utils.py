@@ -1,23 +1,23 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  Utilities to handle META eddy trajectory data
  
-    1) is_wcrlike                       : returns true if given eddy is warm core ring-like, false otherwise
-    2) is_ccrlike                       : returns true if given eddy is cold core ring-like, false otherwise
-    3) meta_eddy_to_nwa_ringlike_eddies : saves pandas dataframe of eddy trajectories for wcr-like & ccr-like eddies
-    4) get_gs                           : returns overall mean position of the Gulf Stream
-    5) get_gs_year                      : takes a given year and returns the average GS path for that year 
-    6) get_gs_month                     : takes a given year, month and returns the average GS path for that month
-    7) get_gs_day                       : takes a given year, month, day and returns the GS path for that day
-    8) get_eddy_formation_loc           : returns lon, lat for a single eddy
-    9) get_eddy_formation_time          : returns year, month for a single eddy
-    10) get_eddy_lifespan                : returns lifespan of the eddy as integer
-    11) eddy_moves_west                  : returns true is eddy moves westward
-    12) eddy_moves_east                  : returns true is eddy moves eastward
-    13) closest_gs_lat                   : returns closest lon, lat of GS position for a given eddy
-    14) is_geq_500m_isobath              : returns true if eddy depth is greater than or equal to 100-m isobath
-    15) count_annual_ring_formations     : returns DataFrame of number of annual eddy formations for an eddy DataFrame
-    16) count_all_ring_formations        : returns DataFrame of number of monthly, yearly eddy formations for an eddy DataFrame
-    17) eddy_df_to_formation_counts_df   : saves DataFrames of merged formation counts for ring-like eddies
+    1) is_wcrlike                        : returns true if given eddy is warm core ring-like, false otherwise
+    2) is_ccrlike                        : returns true if given eddy is cold core ring-like, false otherwise
+    3) meta_eddy_to_nwa_ringlike_eddies  : saves pandas dataframe of eddy trajectories for wcr-like & ccr-like eddies
+    4) get_gs                            : returns overall mean position of the Gulf Stream
+    5) get_gs_year                       : takes a given year and returns the average GS path for that year 
+    6) get_gs_month                      : takes a given year, month and returns the average GS path for that month
+    7) get_gs_day                        : takes a given year, month, day and returns the GS path for that day
+    8) get_eddy_formation_loc            : returns lon, lat for a single eddy
+    9) get_eddy_formation_time           : returns year, month for a single eddy
+   10) get_eddy_lifespan                 : returns lifespan of the eddy as integer
+   11) eddy_moves_west                   : returns true is eddy moves westward
+   12) eddy_moves_east                   : returns true is eddy moves eastward
+   13) closest_gs_lat                    : returns closest lon, lat of GS position for a given eddy
+   14) is_geq_500m_isobath               : returns true if eddy depth is greater than or equal to 100-m isobath
+   15) count_annual_ring_formations      : returns DataFrame of number of annual eddy formations for an eddy DataFrame
+   16) count_all_ring_formations         : returns DataFrame of number of monthly, yearly eddy formations for an eddy DataFrame
+   17) eddy_df_to_formation_counts_df    : saves DataFrames of merged formation counts for ring-like eddies
     
     
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
