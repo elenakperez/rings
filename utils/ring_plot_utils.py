@@ -92,20 +92,19 @@ def all_eddy_tracks_map(eddy_ccr_df, eddy_wcr_df, bathy, title, fig_quality):
 #-------------------------------------------------------------------------------------------------------------------------------
 # )
 def spatial_formations_barplot(ccr_formations_df, wcr_formations_df, title, fig_quality):
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                                                                                                       "
-" Input:                                                                                                "
-"    ccr_formations_df (DataFrame) : pandas dataframe of cold core rings in all zones                   "
-"    wcr_formations_df (DataFrame) : pandas dataframe of warm core rings in all zones                   "
-"    title (Str)             : title of the figure, e.g. 'Map of the Northwest Atlantic'                "
-"    fig_quality (Int)       : integer of what dpi the image will be set to (e.g., 100 dpi)             "
-"                                                                                                       "
-" Output:                                                                                               "
-"    * returns a bar plot for distribution of formations by zone                                        "
-"                                                                                                       "
-"                                                                                                       "
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    "                                                                                                       "
+    " Input:                                                                                                "
+    "    ccr_formations_df (DataFrame) : pandas dataframe of cold core rings in all zones                   "
+    "    wcr_formations_df (DataFrame) : pandas dataframe of warm core rings in all zones                   "
+    "    title (Str)             : title of the figure, e.g. 'Map of the Northwest Atlantic'                "
+    "    fig_quality (Int)       : integer of what dpi the image will be set to (e.g., 100 dpi)             "
+    "                                                                                                       "
+    " Output:                                                                                               "
+    "    * returns a bar plot for distribution of formations by zone                                        "
+    "                                                                                                       "
+    "                                                                                                       "
+    """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""" 
     # create figure
     fig,ax = plt.subplots();
     fig.suptitle(title+'('+str(int(min(ccr_formations_df['year'])))+' - '+str(int(max(ccr_formations_df['year'])))+')', y=0.95, fontsize=14);
@@ -133,19 +132,19 @@ def spatial_formations_barplot(ccr_formations_df, wcr_formations_df, title, fig_
 #-------------------------------------------------------------------------------------------------------------------------------
 # )
 def seasonality_lineplot(ccr_formations_df, wcr_formations_df, title, fig_quality):
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                                                                                                       "
-" Input:                                                                                                "
-"    ccr_formations_df (DataFrame) : pandas dataframe of cold core rings in all zones                   "
-"    wcr_formations_df (DataFrame) : pandas dataframe of warm core rings in all zones                   "
-"    title (Str)                   : title of the figure, e.g. 'Map of the Northwest Atlantic'          "
-"    fig_quality (Int)             : integer of what dpi the image will be set to (e.g., 100 dpi)       "
-"                                                                                                       "
-" Output:                                                                                               "
-"    * returns a bar plot for distribution of formations by zone                                        "
-"                                                                                                       "
-"                                                                                                       "
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    "                                                                                                       "
+    " Input:                                                                                                "
+    "    ccr_formations_df (DataFrame) : pandas dataframe of cold core rings in all zones                   "
+    "    wcr_formations_df (DataFrame) : pandas dataframe of warm core rings in all zones                   "
+    "    title (Str)                   : title of the figure, e.g. 'Map of the Northwest Atlantic'          "
+    "    fig_quality (Int)             : integer of what dpi the image will be set to (e.g., 100 dpi)       "
+    "                                                                                                       "
+    " Output:                                                                                               "
+    "    * returns a bar plot for distribution of formations by zone                                        "
+    "                                                                                                       "
+    "                                                                                                       "
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     
     # calculate average monthly formations
     # initialize
@@ -191,7 +190,7 @@ def seasonality_lineplot(ccr_formations_df, wcr_formations_df, title, fig_qualit
 
 #-------------------------------------------------------------------------------------------------------------------------------
 # ) 
-def timeseries_lineplot(ccr_formations_df, wcr_formations_df, title, fig_quality):
+def timeseries_lineplot(ccr_formations_df, wcr_formations_df, title, fig_quality, ylim_min, ylim_max):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     "                                                                                                       "
     " Input:                                                                                                "
@@ -199,6 +198,8 @@ def timeseries_lineplot(ccr_formations_df, wcr_formations_df, title, fig_quality
     "    wcr_formations_df (DataFrame) : pandas dataframe of warm core rings in all zones                   "
     "    title (Str)                   : title of the figure, e.g. 'Map of the Northwest Atlantic'          "
     "    fig_quality (Int)             : integer of what dpi the image will be set to (e.g., 100 dpi)       "
+    "    ylim_min (Int)                : integer of lowest yaxis tick mar                                   "
+    "    ylim_max (Int)                : integer of highest yaxis tick mar                                   "
     "                                                                                                       "
     " Output:                                                                                               "
     "    * returns a line plot annual formations for whole period (time-series)                             "
@@ -234,7 +235,7 @@ def timeseries_lineplot(ccr_formations_df, wcr_formations_df, title, fig_quality
     # axes formatting
     ax.set_xlabel('Years',fontweight='bold')
     ax.set_ylabel('# of Formations',fontweight='bold');
-    ax.set_ylim(0,25) # 1993-2017
+    ax.set_ylim(ylim_min, ylim_max) # 1993-2017
 #     ax.set_xlim(1980,2020) # to compare to fig. 2 Silver et al., 2021
 
     # custom legend

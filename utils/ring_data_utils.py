@@ -13,8 +13,8 @@
    10) get_eddy_lifespan                 : returns lifespan of the eddy as integer
    11) eddy_moves_west                   : returns true is eddy moves westward
    12) eddy_moves_east                   : returns true is eddy moves eastward
-   13) closest_gs_lat                    : returns closest lon, lat of GS position for a given eddy
-   14) is_geq_500m_isobath               : returns true if eddy depth is greater than or equal to 100-m isobath
+   13) is_geq_500m_isobath               : returns true if eddy depth is greater than or equal to 100-m isobath
+   14) get_eddy_demise_loc               : returns lon, lat for demise location of eddy
    15) count_annual_ring_formations      : returns DataFrame of number of annual eddy formations for an eddy DataFrame
    16) count_all_ring_formations         : returns DataFrame of number of monthly, yearly eddy formations for an eddy DataFrame
    17) eddy_df_to_formation_counts_df    : saves DataFrames of merged formation counts for ring-like eddies
@@ -40,7 +40,7 @@ warnings.filterwarnings("ignore")
 
 #-------------------------------------------------------------------------------------------------------------------------------
 # 1) 
-def is_wcrlike(eddy):
+def is_wcrlike(eddy, gs):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     
     This function uses mutliple criterion to filter out warm core rings from mesoscale eddies. The criteria is:
@@ -53,7 +53,8 @@ def is_wcrlike(eddy):
     anti-cylonicity would filter out cold core rings from being counted as warm core rings.
     
     Input:
-        eddy (DataFrame)  : Pandas DataFrame with data from a single eddy 
+        eddy (DataFrame)  : Pandas DataFrame with data from a single eddy
+        gs (mat)          : .mat file of daily Gulf Stream paths 
 
     Output:
         (bool)            : returns true if eddy is north of Gulf Stream for given date, else returns false
@@ -66,8 +67,8 @@ def is_wcrlike(eddy):
     eddy_month = get_eddy_formation_time(eddy)[1] # month of eddy formation
     eddy_day = get_eddy_formation_time(eddy)[2] # day of eddy formation
 
-    gs_lon_np = get_gs_day(eddy_year,eddy_month,eddy_day)[0] # np array of gs lon
-    gs_lat_np = get_gs_day(eddy_year,eddy_month,eddy_day)[1] # np array of gs lat
+    gs_lon_np = get_gs_day(eddy_year,eddy_month,eddy_day, gs)[0] # np array of gs lon
+    gs_lat_np = get_gs_day(eddy_year,eddy_month,eddy_day, gs)[1] # np array of gs lat
 
     gs_lon_len = len(gs_lon_np) # length of gs lon array
 
@@ -80,7 +81,7 @@ def is_wcrlike(eddy):
 
 #-------------------------------------------------------------------------------------------------------------------------------
 # 2)
-def is_ccrlike(eddy):
+def is_ccrlike(eddy, gs):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     
     This function uses mutliple criterion to filter out cold core rings from mesoscale eddies. The criteria is:
@@ -93,7 +94,8 @@ def is_ccrlike(eddy):
     cylonicity would filter out warm core rings from being counted as cold core rings.
     
     Input:
-        eddy (DataFrame)  : Pandas DataFrame with data from a single eddy 
+        eddy (DataFrame)  : Pandas DataFrame with data from a single eddy
+        gs (mat)          : .mat file of daily Gulf Stream paths 
 
     Output:
         (bool)            : returns true if eddy is south of Gulf Stream for given date, else returns false
@@ -106,8 +108,8 @@ def is_ccrlike(eddy):
     eddy_month = get_eddy_formation_time(eddy)[1] # month of eddy formation
     eddy_day = get_eddy_formation_time(eddy)[2] # day of eddy formation
 
-    gs_lon_np = get_gs_day(eddy_year,eddy_month,eddy_day)[0] # np array of gs lon
-    gs_lat_np = get_gs_day(eddy_year,eddy_month,eddy_day)[1] # np array of gs lat
+    gs_lon_np = get_gs_day(eddy_year,eddy_month,eddy_day, gs)[0] # np array of gs lon
+    gs_lat_np = get_gs_day(eddy_year,eddy_month,eddy_day, gs)[1] # np array of gs lat
 
     gs_lon_len = len(gs_lon_np) # length of gs lon array
 
@@ -122,10 +124,10 @@ def is_ccrlike(eddy):
 
 #-------------------------------------------------------------------------------------------------------------------------------
 # 3)
-def meta_eddy_to_nwa_ringlike_eddies(path):
+def meta2_eddy_to_nwa_ringlike_eddies(path):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     " Function Description:                                                                                   "
-    "    The meta_eddy_to_nwa_ringlike_eddies function reads in META eddy datasets and converts it to         " 
+    "    The meta2_eddy_to_nwa_ringlike_eddies function reads in META2.0 eddy datasets and converts it to         " 
     "    a pandas dataframe, filters out eddies that don't qualify as WCR-like or CCR-like, and saves         "
     "    the WCR-like and CCR-like eddy dataframes in the data/dataframes folder.                             "
     "                                                                                                         "
@@ -139,7 +141,7 @@ def meta_eddy_to_nwa_ringlike_eddies(path):
     
     
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    "                                 read in META eddy trajectory datasets                                   "
+    "                          read in META eddy trajectory datasets & Gulf Stream paths                      "
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     # read in META2.0 .nc file as xarray dataset
@@ -147,9 +149,17 @@ def meta_eddy_to_nwa_ringlike_eddies(path):
 
     # convert xr dataset to pandas dataframe
     meta2_df = meta2_ds.to_dataframe()
+
+    # load GS file
+    gs = loadmat('/Users/elenaperez/Desktop/rings/data/gulf_stream/GS_daily_CMEMS_047_50cm_contours_1993_to_nrt.mat')
+
+    # convert time array to ordinal dates
+    for d in range(len(gs['time'][0])-1):
+        gs['time'][0][d] = gs['time'][0][d]+date.toordinal(date(1950,1,1))
+        
     
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    "                        restrict dataset to nwa box & change lon to -180 to 180                          "
+    "                        restrict dataframe to nwa box & change lon to -180 to 180                        "
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     # change longitude from 0 to 360 --> -180 to 180
@@ -159,9 +169,9 @@ def meta_eddy_to_nwa_ringlike_eddies(path):
     zone_lat = [30,45] # N
     zone_lon = [[-75,-55],[-75,-70],[-70,-65],[-65,-60],[-60,-55]] # W ... 0 –> all zones, 1 –> zone 1, etc.
 
-    # cut eddy trajectory dataframe down to NWA region
-    meta2_df = meta2_df[(meta2_df['longitude'] >= zone_lon[0][0]) & (meta2_df['longitude'] <= zone_lon[0][1]) & (meta2_df['latitude'] >= zone_lat[0]) & (meta2_df['latitude'] <= zone_lat[1])]
-
+    # cut eddy trajectory dataframe down to NWA region and time period (1993-2017)
+    meta2_df = meta2_df[(meta2_df['longitude'] >= zone_lon[0][0]) & (meta2_df['longitude'] <= zone_lon[0][1]) & (meta2_df['latitude'] >= zone_lat[0]) & (meta2_df['latitude'] <= zone_lat[1]) & (meta2_df['time'].dt.year<2018)]
+    
     
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     "                                 filter for wcr-like & ccr-like eddies                                   "
@@ -177,9 +187,8 @@ def meta_eddy_to_nwa_ringlike_eddies(path):
     # loop through each eddy to determine if it is wcr-like
     for i in np.array(anticyclonic_eddy_df['track'].unique()):
         eddy = anticyclonic_eddy_df[anticyclonic_eddy_df['track']==i]
-        if ((eddy['time'].dt.year<2018).all()): # stops at 2017 because that is common cut-off year
-            if is_wcrlike(eddy).all():
-                wcrlike_tracks.append(i)
+        if is_wcrlike(eddy, gs).all():
+            wcrlike_tracks.append(i)
 
     # only incude eddies that are wcr-like
     eddy_wcrlike_df = anticyclonic_eddy_df[anticyclonic_eddy_df['track'].isin(wcrlike_tracks)]
@@ -190,9 +199,8 @@ def meta_eddy_to_nwa_ringlike_eddies(path):
     # loop through each eddy to determine if it is ccr-like
     for i in np.array(cyclonic_eddy_df['track'].unique()):
         eddy = cyclonic_eddy_df[cyclonic_eddy_df['track']==i]
-        if ((eddy['time'].dt.year<2018).all()): # stops at 2017 because that is common cut-off year
-            if is_ccrlike(eddy).all():
-                ccrlike_tracks.append(i)
+        if is_ccrlike(eddy, gs).all():
+            ccrlike_tracks.append(i)
 
     # only incude eddies that are wcr-like
     eddy_ccrlike_df = cyclonic_eddy_df[cyclonic_eddy_df['track'].isin(ccrlike_tracks)]
@@ -203,10 +211,10 @@ def meta_eddy_to_nwa_ringlike_eddies(path):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     # save wcr-like df as pickled file
-    eddy_wcrlike_df.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/nwa_wcrlike_eddies.pkl')
+    eddy_wcrlike_df.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/meta2_nwa_wcrlike_eddies.pkl')
     
     # save ccr-like df as pickled file
-    eddy_ccrlike_df.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/nwa_ccrlike_eddies.pkl') 
+    eddy_ccrlike_df.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/meta2_nwa_ccrlike_eddies.pkl') 
 
 
 #-------------------------------------------------------------------------------------------------------------------------------
@@ -267,25 +275,20 @@ def get_gs_month(year,month):
 
 #-------------------------------------------------------------------------------------------------------------------------------
 # 7)
-def get_gs_day(year,month,day):
+def get_gs_day(year,month,day, gs):
     
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     Input:
         year (Int)           : the year for which you want to extract GS position (1993-2022)
         month (Int)          : the month for which you want to extract GS position (Jan 1993 to Oct 2022)
         day (Int)            : the day for which you want to extract GS position (Jan 1 1993 to Oct 5 2022)
+        gs (mat)             : .mat file of daily Gulf Stream paths 
     
     Output:
         gs_lon_month (array) : 1D array of GS longitude for that month
         gs_lat_month (array) : 1D array of GS latitude for that month
         
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    # load GS file
-    gs = loadmat('/Users/elenaperez/Desktop/rings/data/gulf_stream/GS_daily_CMEMS_047_50cm_contours_1993_to_nrt.mat')
-    
-    'convert time array to ordinal dates'
-    for d in range(len(gs['time'][0])-1):
-        gs['time'][0][d] = gs['time'][0][d]+date.toordinal(date(1950,1,1))
     
     'get index in lon/lat arrays from time array'
     index_from_date = np.where(gs['time'][0]==date.toordinal(date(year,month,day)))[0][0]
@@ -438,45 +441,19 @@ def is_geq_100m_isobath(eddy):
 
 
 #-------------------------------------------------------------------------------------------------------------------------------
-# 14)
-def is_geq_100m_isobath(eddy):
+# 14) returns location (lon, lat) of demise for a single eddy
+
+def get_eddy_demise_loc(eddy):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    
-    This function determins if an eddy is *not* on the shelf. If its depth at bird is greater than or equal to
-    the 100-m isobath, return True since it is *not* on the shelf. If its depth is less than 100-m,
-    return False because it is on the shelf.
-    
     Input:
-        eddy (DataFrame) : Pandas DataFrame with data from a single eddy 
+        eddy (DataFrame)  : Pandas DataFrame with data from a single eddy 
 
     Output:
-        (bool)           : returns true if eddy is deeper than 500m isobath (on shelf), returns false otherwise
+        (Tuple)           : returns lon/lat location of eddy demise as tuple
 
+     
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    bathy = xr.open_dataset('/Users/elenaperez/Desktop/rings/data/nwa_bathy.nc')
-    
-    target_bathy = 100 # desired isobath
-
-    eddy_lon = get_eddy_formation_loc(eddy)[0] # lon of eddy formation
-    eddy_lat = get_eddy_formation_loc(eddy)[1] # lat of eddy formation
-
-    bathy_lon_np = bathy.lon.values
-    bathy_lon_len = len(bathy_lon_np) # length of bathy lon array
-
-    eddy_lon_np = np.full(bathy_lon_len, eddy_lon)
-
-    min_lon_index = np.argmin(abs(bathy_lon_np-eddy_lon_np)) # index of closest lon in bathy file
-
-    bathy_lat_np = bathy.z.sel(lon=bathy_lon_np[min_lon_index]).lat.values # array of bathy lats at the eddy lon
-    bathy_lat_len = len(bathy_lat_np)
-
-    eddy_lat_np = np.full(bathy_lat_len, eddy_lat) 
-
-    min_lat_index = np.argmin(abs(bathy_lat_np-eddy_lat_np)) # index of closest lat in bathy file
-
-    bathy_depth = bathy.z.sel(lat=bathy_lat_np[min_lat_index],lon=bathy_lon_np[min_lon_index]).values # depth of 
-
-    return (target_bathy <= abs(bathy_depth))
+    return eddy.iloc[-1].longitude,eddy.iloc[-1].latitude
 
 
 #-------------------------------------------------------------------------------------------------------------------------------
@@ -625,4 +602,5 @@ def eddy_df_to_formation_counts_df():
 
 #-------------------------------------------------------------------------------------------------------------------------------
 
+#-------------------------------------------------------------------------------------------------------------------------------
 
