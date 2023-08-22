@@ -1,23 +1,25 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
  Utilities to handle META eddy trajectory data
  
-    1) is_wcrlike                        : returns true if given eddy is warm core ring-like, false otherwise
-    2) is_ccrlike                        : returns true if given eddy is cold core ring-like, false otherwise
-    3) meta_eddy_to_nwa_ringlike_eddies  : saves pandas dataframe of eddy trajectories for wcr-like & ccr-like eddies
-    4) get_gs                            : returns overall mean position of the Gulf Stream
-    5) get_gs_year                       : takes a given year and returns the average GS path for that year 
-    6) get_gs_month                      : takes a given year, month and returns the average GS path for that month
-    7) get_gs_day                        : takes a given year, month, day and returns the GS path for that day
-    8) get_eddy_formation_loc            : returns lon, lat for a single eddy
-    9) get_eddy_formation_time           : returns year, month for a single eddy
-   10) get_eddy_lifespan                 : returns lifespan of the eddy as integer
-   11) eddy_moves_west                   : returns true is eddy moves westward
-   12) eddy_moves_east                   : returns true is eddy moves eastward
-   13) is_geq_500m_isobath               : returns true if eddy depth is greater than or equal to 100-m isobath
-   14) get_eddy_demise_loc               : returns lon, lat for demise location of eddy
-   15) count_annual_ring_formations      : returns DataFrame of number of annual eddy formations for an eddy DataFrame
-   16) count_all_ring_formations         : returns DataFrame of number of monthly, yearly eddy formations for an eddy DataFrame
-   17) eddy_df_to_formation_counts_df    : saves DataFrames of merged formation counts for ring-like eddies
+    1) is_wcrlike                         : returns true if given eddy is warm core ring-like, false otherwise
+    2) is_ccrlike                         : returns true if given eddy is cold core ring-like, false otherwise
+    3) meta2_eddy_to_nwa_ringlike_eddies   : saves pandas df of META2.0 eddy trajectories for wcr-like & ccr-like eddies
+    4) get_gs                             : returns overall mean position of the Gulf Stream
+    5) get_gs_year                        : takes a given year and returns the average GS path for that year 
+    6) get_gs_month                       : takes a given year, month and returns the average GS path for that month
+    7) get_gs_day                         : takes a given year, month, day and returns the GS path for that day
+    8) get_eddy_formation_loc             : returns lon, lat for a single eddy
+    9) get_eddy_formation_time            : returns year, month for a single eddy
+   10) get_eddy_lifespan                  : returns lifespan of the eddy as integer
+   11) eddy_moves_west                    : returns true is eddy moves westward
+   12) eddy_moves_east                    : returns true is eddy moves eastward
+   13) is_geq_500m_isobath                : returns true if eddy depth is greater than or equal to 100-m isobath
+   14) get_eddy_demise_loc                : returns lon, lat for demise location of eddy
+   15) count_annual_ring_formations       : returns DataFrame of number of annual eddy formations for an eddy DataFrame
+   16) count_all_ring_formations          : returns DataFrame of number of monthly, yearly eddy formations for an eddy DataFrame
+   17) eddy_df_to_formation_counts_df     : saves DataFrames of merged formation counts for ring-like eddies
+   18) meta31_eddy_to_nwa_ringlike_eddies : saves pandas df of META3.1exp eddy trajectories for wcr-like & ccr-like eddies
+   19) formation_counts_df_to_excel       : saves xlxs files of annual formation counts for regime shift detection
     
     
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -526,13 +528,14 @@ def count_all_formations(ring_df, which_zone):
 
 #-------------------------------------------------------------------------------------------------------------------------------
 # 17)
-def eddy_df_to_formation_counts_df():
+def eddy_df_to_formation_counts_df(whichDataset):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     "                      define zone boundaries & create dataframe for each zone                            "
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-    eddy_wcr_df = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/nwa_wcrlike_eddies.pkl')
-    eddy_ccr_dr = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/nwa_ccrlike_eddies.pkl') 
+ 
+    eddy_wcr_df = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/'+whichDataset+'_nwa_wcrlike_eddies.pkl')
+    eddy_ccr_dr = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/'+whichDataset+'_nwa_ccrlike_eddies.pkl') 
+    
         
     # Gangopadhyay et al., 2019 bounds
     zone_lat = [30,45] # N
@@ -578,6 +581,7 @@ def eddy_df_to_formation_counts_df():
     # save zone_ccr_yyyy_formations df as pickled file
     zone_ccr_yyyy_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/zone_ccrlike_yyyy_formations.pkl') 
 
+
     
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     "                       ALL – count eddy annual & monthly formations for each zone                        "
@@ -598,9 +602,170 @@ def eddy_df_to_formation_counts_df():
 
     # save zone_ccr_yyyy_mm_formations df as pickled file
     zone_ccr_yyyy_mm_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/zone_ccrlike_yyyy_mm_formations.pkl') 
+    
+    
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    "                                   save files for specified dataset                                      "
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    
+# save zone_wcr/ccr_yyyy_formations df as pickled file
+    zone_wcr_yyyy_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/'+whichDataset+'_zone_wcrlike_yyyy_formations.pkl')
+    zone_ccr_yyyy_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/'+whichDataset+'_zone_ccrlike_yyyy_formations.pkl') 
+
+    # save zone_wcr/ccr_yyyy_mm_formations df as pickled file
+    zone_wcr_yyyy_mm_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/'+whichDataset+'_zone_wcrlike_yyyy_mm_formations.pkl')
+    zone_ccr_yyyy_mm_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/'+whichDataset+'_zone_ccrlike_yyyy_mm_formations.pkl') 
+    
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# 18)
+def meta31_eddy_to_nwa_ringlike_eddies(path_anticyclonic, path_cyclonic):
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    " Function Description:                                                                                   "
+    "    The meta31_eddy_to_nwa_ringlike_eddies function reads in META3.1exp eddy datasets and converts it to         " 
+    "    a pandas dataframe, filters out eddies that don't qualify as WCR-like or CCR-like, and saves         "
+    "    the WCR-like and CCR-like eddy dataframes in the data/dataframes folder.                             "
+    "                                                                                                         "
+    " Input:                                                                                                  " 
+    "    path (String)         : path to where the META eddy dataset is stored                                "
+    "                                                                                                         "
+    " Output:                                                                                                 "
+    "    (None)                : saves pandas dataframe of eddy trajectories for wcr-like and ccr-like eddies "
+    "                                                                                                         "
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    
+    
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    "                      read in META eddy trajectory datasets & Gulf Stream paths                          "
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    # read in META3.1exp .nc files as xarray dataset
+    meta31_a_ds = xr.open_dataset(path_anticyclonic)
+    meta31_c_ds = xr.open_dataset(path_cyclonic)
+
+    # change longitude (0-360) --> (-180 to 180)
+    meta31_a_ds = meta31_a_ds.assign_coords(longitude=((meta31_a_ds.longitude + 180) % 360) - 180, latitude=meta31_a_ds.latitude)
+    meta31_c_ds = meta31_c_ds.assign_coords(longitude=((meta31_c_ds.longitude + 180) % 360) - 180, latitude=meta31_c_ds.latitude)
+
+    # for convience call the Dataet x_ds
+    a_ds = meta31_a_ds
+    c_ds = meta31_c_ds
+
+    # create cyclonic_type column to put in pandas DataFrame
+    anticyclonic_arr = np.full(shape=len(meta31_a_ds.longitude), fill_value=1)
+    cyclonic_arr = np.full(shape=len(meta31_c_ds.longitude), fill_value=-1)
+
+    # convert xarray DataSet to pandas DataFrame
+    anticyclonic_df = pd.DataFrame({'amplitude': np.array(a_ds.amplitude), 'cyclonic_type': anticyclonic_arr, 'latitude': np.array(a_ds.latitude), 'longitude': np.array(a_ds.longitude), 'observation_flag' :  np.array(a_ds.observation_flag), 'observation_number' : np.array(a_ds.observation_number), 'speed_average' : np.array(a_ds.speed_average), 'speed_radius' : np.array(a_ds.speed_radius), 'time' : np.array(a_ds.time), 'track' : np.array(a_ds.track)})
+    cyclonic_df = pd.DataFrame({'amplitude': np.array(c_ds.amplitude), 'cyclonic_type': cyclonic_arr, 'latitude': np.array(c_ds.latitude), 'longitude': np.array(c_ds.longitude), 'observation_flag' :  np.array(c_ds.observation_flag), 'observation_number' : np.array(c_ds.observation_number), 'speed_average' : np.array(c_ds.speed_average), 'speed_radius' : np.array(c_ds.speed_radius), 'time' : np.array(c_ds.time), 'track' : np.array(c_ds.track)})
+    
+    # load GS file
+    gs = loadmat('/Users/elenaperez/Desktop/rings/data/gulf_stream/GS_daily_CMEMS_047_50cm_contours_1993_to_nrt.mat')
+
+    # convert time array to ordinal dates
+    for d in range(len(gs['time'][0])-1):
+        gs['time'][0][d] = gs['time'][0][d]+date.toordinal(date(1950,1,1))
+    
+    
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    "                        restrict dataframe to nwa box & change lon to -180 to 180                        "
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    # bounding box for NWA based on Gangopadhyay et al., 2019
+    zone_lat = [30,45] # N
+    zone_lon = [[-75,-55],[-75,-70],[-70,-65],[-65,-60],[-60,-55]] # W ... 0 –> all zones, 1 –> zone 1, etc.
+
+    # cut eddy trajectory dataframe down to NWA region
+    anticyclonic_eddy_df = anticyclonic_df[(anticyclonic_df['longitude'] >= zone_lon[0][0]) & (anticyclonic_df['longitude'] <= zone_lon[0][1]) & (anticyclonic_df['latitude'] >= zone_lat[0]) & (anticyclonic_df['latitude'] <= zone_lat[1]) & (anticyclonic_df['time'].dt.year<2018)]
+    cyclonic_eddy_df = cyclonic_df[(cyclonic_df['longitude'] >= zone_lon[0][0]) & (cyclonic_df['longitude'] <= zone_lon[0][1]) & (cyclonic_df['latitude'] >= zone_lat[0]) & (cyclonic_df['latitude'] <= zone_lat[1]) & (cyclonic_df['time'].dt.year<2018)]
+
+
+    """"""""""""""""""""""""""""""""""""""" wcr-like eddies """""""""""""""""""""""""""""""""""""""""""""""""""
+    wcrlike_tracks = []
+    # loop through each eddy to determine if it is wcr-like
+    for i in np.array(anticyclonic_eddy_df['track'].unique()):
+        eddy = anticyclonic_eddy_df[anticyclonic_eddy_df['track']==i]
+        if is_wcrlike(eddy, gs).all():
+            wcrlike_tracks.append(i)
+
+    # only incude eddies that are wcr-like
+    eddy_wcrlike_df = anticyclonic_eddy_df[anticyclonic_eddy_df['track'].isin(wcrlike_tracks)]
+
+
+    # """"""""""""""""""""""""""""""""""""""" ccr-like eddies """""""""""""""""""""""""""""""""""""""""""""""""""
+    ccrlike_tracks = []
+    # loop through each eddy to determine if it is ccr-like
+    for i in np.array(cyclonic_eddy_df['track'].unique()):
+        eddy = cyclonic_eddy_df[cyclonic_eddy_df['track']==i]
+        if is_ccrlike(eddy, gs).all():
+            ccrlike_tracks.append(i)
+
+    # only incude eddies that are wcr-like
+    eddy_ccrlike_df = cyclonic_eddy_df[cyclonic_eddy_df['track'].isin(ccrlike_tracks)]
+    
+    
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    "                       save filtered dataframes for wcr- & ccr-like eddies                               "
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    # save wcr-like df as pickled file
+    eddy_wcrlike_df.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/meta31_nwa_wcrlike_eddies.pkl')
+    
+    # save ccr-like df as pickled file
+    eddy_ccrlike_df.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/meta31_nwa_ccrlike_eddies.pkl') 
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# 19) export formation counts to excel to run the Rodinov Regime Shift Detection Software 
+def formation_counts_df_to_excel(whichDataset):
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    " Function Description:                                                                                   "
+    "    The formation_counts_df_to_excel function combines annual formation counts of META dataframes        " 
+    "    and saves the counts as excel .xlsx files to be used in the regime shift detection code.             "
+    "                                                                                                         "
+    " Input:                                                                                                  " 
+    "    whichDataset (String) : which META eddy dataset to run the function for                              "
+    "                                                                                                         "
+    " Output:                                                                                                 "
+    "    (None)                : saves .xlsx file of merged annual formation counts                           "
+    "                                                                                                         "
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    
+    ccr_formations_df = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/'+whichDataset+'_zone_ccrlike_yyyy_formations.pkl') 
+    wcr_formations_df = pd.read_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/'+whichDataset+'_zone_wcrlike_yyyy_formations.pkl') 
+    
+    year_range = np.arange(min(ccr_formations_df['year']), max(ccr_formations_df['year'])+1)
+    var = ['year', 'ccr-like', 'wcr-like']
+
+    df_structure = np.zeros((len(year_range), len(var)))
+    ring_annual_count_df = pd.DataFrame(df_structure, columns = var)
+
+    ring_annual_count_df['year'] = ccr_formations_df['year']
+    ring_annual_count_df['ccr-like'] = ccr_formations_df['all_zones']
+    ring_annual_count_df['wcr-like'] = wcr_formations_df['all_zones']
+    
+    ring_annual_count_df.to_excel('/Users/elenaperez/Desktop/rings/data/excel/'+whichDataset+'_zone_ringlike_yyyy_formations.xlsx')
+    
 
 
 #-------------------------------------------------------------------------------------------------------------------------------
 
+
+
+
+
+
+
+
+
+
 #-------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
