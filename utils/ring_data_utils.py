@@ -277,7 +277,7 @@ def get_gs_month(year,month):
 
 #-------------------------------------------------------------------------------------------------------------------------------
 # 7)
-def get_gs_day(year,month,day, gs):
+def get_gs_day(year, month, day, gs):
     
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     Input:
@@ -575,13 +575,6 @@ def eddy_df_to_formation_counts_df(whichDataset):
     for zone in zones_ccrs:
         zone_ccr_yyyy_formations[zone] = count_annual_formations(zones_ccrs[zone], zone)[zone]
         
-    # save zone_wcr_yyyy_formations df as pickled file
-    zone_wcr_yyyy_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/zone_wcrlike_yyyy_formations.pkl') 
-
-    # save zone_ccr_yyyy_formations df as pickled file
-    zone_ccr_yyyy_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/zone_ccrlike_yyyy_formations.pkl') 
-
-
     
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     "                       ALL – count eddy annual & monthly formations for each zone                        "
@@ -596,12 +589,6 @@ def eddy_df_to_formation_counts_df(whichDataset):
     zone_ccr_yyyy_mm_formations = count_all_formations(eddy_ccr_dr, 'all_zones')
     for zone in zones_ccrs:
         zone_ccr_yyyy_mm_formations[zone] = count_all_formations(zones_ccrs[zone], zone)[zone]
-    
-    # save zone_wcr_yyyy_mm_formations df as pickled file
-    zone_wcr_yyyy_mm_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/zone_wcrlike_yyyy_mm_formations.pkl') 
-
-    # save zone_ccr_yyyy_mm_formations df as pickled file
-    zone_ccr_yyyy_mm_formations.to_pickle('/Users/elenaperez/Desktop/rings/data/dataframes/zone_ccrlike_yyyy_mm_formations.pkl') 
     
     
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -622,9 +609,9 @@ def eddy_df_to_formation_counts_df(whichDataset):
 def meta31_eddy_to_nwa_ringlike_eddies(path_anticyclonic, path_cyclonic):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     " Function Description:                                                                                   "
-    "    The meta31_eddy_to_nwa_ringlike_eddies function reads in META3.1exp eddy datasets and converts it to         " 
-    "    a pandas dataframe, filters out eddies that don't qualify as WCR-like or CCR-like, and saves         "
-    "    the WCR-like and CCR-like eddy dataframes in the data/dataframes folder.                             "
+    "   The meta31_eddy_to_nwa_ringlike_eddies function reads in META3.1exp eddy datasets and converts it to  " 
+    "   a pandas dataframe, filters out eddies that don't qualify as WCR-like or CCR-like, and saves          "
+    "   the WCR-like and CCR-like eddy dataframes in the data/dataframes folder.                              "
     "                                                                                                         "
     " Input:                                                                                                  " 
     "    path (String)         : path to where the META eddy dataset is stored                                "

@@ -131,7 +131,7 @@ def spatial_formations_barplot(ccr_formations_df, wcr_formations_df, title, fig_
 
 #-------------------------------------------------------------------------------------------------------------------------------
 # )
-def seasonality_lineplot(ccr_formations_df, wcr_formations_df, title, fig_quality):
+def seasonality_lineplot(ccr_formations_df, wcr_formations_df, title, ylim_min, ylim_max, fig_quality):
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     "                                                                                                       "
     " Input:                                                                                                "
@@ -178,7 +178,7 @@ def seasonality_lineplot(ccr_formations_df, wcr_formations_df, title, fig_qualit
     # axes formatting
     ax.set_xlabel('Months', fontweight='bold')
     ax.set_ylabel('Average No. of Formations',fontweight='bold');
-    ax.set_ylim(0,2.4)
+    ax.set_ylim(ylim_min,ylim_max)
 
     # custom legend
     from matplotlib.lines import Line2D
