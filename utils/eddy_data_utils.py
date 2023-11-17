@@ -192,7 +192,7 @@ def get_gs():
      
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     # load GS file
-    gs = loadmat('/Users/elenaperez/Desktop/rings/data/GS.mat')
+    gs = loadmat('/Users/elenaperez/Desktop/rings/data/gulf_stream/GS.mat')
     
     # save Gulf Stream data as xarray
     return (gs['lon_cell'][0][0][0] - 360),(gs['lat_cell'][0][0][0])
