@@ -39,7 +39,7 @@ import sys
 sys.path.append("..")
 
 # import the util data functions
-from utils.eddy_data_utils import *
+from utils.ring_data_utils import *
 
 #-------------------------------------------------------------------------------------------------------------------------------
 # )
